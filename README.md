@@ -88,6 +88,7 @@ Scope: This session scope was to use MSTest methods to initialize/clean up our t
 One of a test case component is the prerequisite: conditions that must be met before the test case can be run.
 Our code test login scenarios and we need to see what are the prerequisites.
 We have identified the following steps that need to be execute before running the test:
+
             var driver = new ChromeDriver(); // open the browser
             driver.Manage().Window.Maximize(); // maximize the window 
             driver.Navigate().GoToUrl("http://a.testaddressbook.com/"); // access the SUT url
@@ -95,6 +96,7 @@ We have identified the following steps that need to be execute before running th
             Thread.Sleep(1000); // THIS sleep is a bad practice AND NEEDS TO BE DELETED AND WE WILL BURN IT WITH FIRE IN THE NEAR FUTURE
 
 Also, after the test has finished running, we need to clean up the operations that we made in our test in order to not impact further test. Remember, each test is independent and should not influence the result of other tests. In our test, the clean up would mean to close the browser.
+
             driver.Quit();
 
 MSTest provides a way to declare methods to be called by the test runner before or after running a test.
@@ -113,60 +115,60 @@ The method decorated by [TestInitialize] is called before running each test of t
 
 First, we need to remove the init/clean up steps and to move it the according method. At this point, our tests should look like this: 
 
-namespace UnitTestProject1
-{
-    [TestClass]
-    public class LoginTests
-    {
-        //declare IWebDriver instance variable
-        //use it outside of any methods so that we can use it in various methods
-        private IWebDriver driver;
+          namespace UnitTestProject1
+          {
+              [TestClass]
+              public class LoginTests
+              {
+                  //declare IWebDriver instance variable
+                  //use it outside of any methods so that we can use it in various methods
+                  private IWebDriver driver;
 
-        [TestInitialize]
-        public void SetUp()
-        {
-            //initialize the needed driver. In our case is ChromeDriver
-            driver = new ChromeDriver();
-            loginPage = new LoginPage(driver);
-            driver.Manage().Window.Maximize();
-            driver.Navigate().GoToUrl("http://a.testaddressbook.com/");
-            driver.FindElement(By.Id("sign-in")).Click();
-            Thread.Sleep(1000);
-        }
+                  [TestInitialize]
+                  public void SetUp()
+                  {
+                      //initialize the needed driver. In our case is ChromeDriver
+                      driver = new ChromeDriver();
+                      loginPage = new LoginPage(driver);
+                      driver.Manage().Window.Maximize();
+                      driver.Navigate().GoToUrl("http://a.testaddressbook.com/");
+                      driver.FindElement(By.Id("sign-in")).Click();
+                      Thread.Sleep(1000);
+                  }
 
-        [TestMethod]
-        public void Login_CorrectEmail_CorrectPassword()
-        {
-            driver.FindElement(By.Id("session_email")).SendKeys("test@test.test");
-            driver.FindElement(By.Id("session_password")).SendKeys("test");
-            driver.FindElement(By.Name("commit")).Click();
+                  [TestMethod]
+                  public void Login_CorrectEmail_CorrectPassword()
+                  {
+                      driver.FindElement(By.Id("session_email")).SendKeys("test@test.test");
+                      driver.FindElement(By.Id("session_password")).SendKeys("test");
+                      driver.FindElement(By.Name("commit")).Click();
 
-            var expectedResult = "test@test.test";
-            var actualResults = driver.FindElement(By.CssSelector("span[data-test='current-user']")).Text;
+                      var expectedResult = "test@test.test";
+                      var actualResults = driver.FindElement(By.CssSelector("span[data-test='current-user']")).Text;
 
-            Assert.AreEqual(expectedResult, actualResults);
-        }
+                      Assert.AreEqual(expectedResult, actualResults);
+                  }
 
-        [TestMethod]
-        public void Login_IncorrectEmail_IncorrectPassword()
-        {
-            driver.FindElement(By.Id("session_email")).SendKeys("wrong@wrong.wrong");
-            driver.FindElement(By.Id("session_password")).SendKeys("wrong");
-            driver.FindElement(By.Name("commit")).Click();
+                  [TestMethod]
+                  public void Login_IncorrectEmail_IncorrectPassword()
+                  {
+                      driver.FindElement(By.Id("session_email")).SendKeys("wrong@wrong.wrong");
+                      driver.FindElement(By.Id("session_password")).SendKeys("wrong");
+                      driver.FindElement(By.Name("commit")).Click();
 
-            var expectedResult = "Bad email or password.";
-            var actualResults = driver.FindElement(By.XPath("//div[starts-with(@class, 'alert')]")).Text;
+                      var expectedResult = "Bad email or password.";
+                      var actualResults = driver.FindElement(By.XPath("//div[starts-with(@class, 'alert')]")).Text;
 
-            Assert.AreEqual(expectedResult, actualResults);
-        } 
+                      Assert.AreEqual(expectedResult, actualResults);
+                  } 
 
-        [TestCleanup]
-        public void CleanUp()
-        {
-            driver.Quit();
-        }
-    }
-}   
+                  [TestCleanup]
+                  public void CleanUp()
+                  {
+                      driver.Quit();
+                  }
+              }
+          }   
 
 ONE OF THE COMMON MISTAKE IS TO DECLARE THE IWebDriver INSTANCE VARIABLE WITHIN THE TEST INIT:
 
@@ -190,25 +192,33 @@ This approach is called Page Object Model(POM). It helps make the code more read
 Page Object model is an object design pattern in Selenium, where web pages are represented as classes, and the various elements on the page are defined as variables on the class. All possible user interactions can then be implemented as methods on the class.
 
 Let's create the the page object that contains the elements for the login page: LoginPage.cs
+
 Right click on the project > Add > Folder and name it PageObjects
+
 Right click on the PageObjects folder > Add > New Item... > Add a class with name: LoginPage.cs
+
 We need to add the objects that we use in our script in this class: email input, password input, sign in button and create a method to login the user.
+
 There are multiple ways to declare the page objects:
 
 First: create a method to return an IWebelement
+
       private IWebelement TxtEmail()
       {
         return driver.FindElement(By.Id("session_email"));
       }
 
 Second: create an IWebElement property 
+
       private IWebElement TxtEmail => driver.FindElement(By.Id("session_email"));
 
 Third: Extract the By separately 
+
       By email = By.Id("session_email")
       private IWebElement TxtEmail => driver.FindElement(email);
 
 Our login page will look like this in the end:
+
       public class LoginPage
       {
           //declare the driver
