@@ -11,26 +11,37 @@ namespace UnitTestProject1.PageObjects
             driver = browser;
         }
 
-        private IWebElement Username()
+        //TODO: move it in a generic class
+        private IWebElement BtnSignIn()
+        {
+            return driver.FindElement(By.Id("sign-in"));
+        }
+
+        private IWebElement TxtUsername()
         {
             return driver.FindElement(By.Id("session_email"));
         }
 
-        private IWebElement Password()
+        private IWebElement TxtPassword()
         {
             return driver.FindElement(By.Id("session_password"));
         }
 
-        private IWebElement LoginClick()
+        private IWebElement BtnLogin()
         {
             return driver.FindElement(By.Name("commit"));
         }
 
+        public void NavigateToLoginPage()
+        {
+            BtnSignIn().Click();
+        }
+
         public void LoginApplication(string username, string password)
         {
-            Username().SendKeys(username);
-            Password().SendKeys(password);
-            LoginClick().Click();
+            TxtUsername().SendKeys(username);
+            TxtPassword().SendKeys(password);
+            BtnLogin().Click();
         }
 
     }

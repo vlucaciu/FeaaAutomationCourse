@@ -7,44 +7,39 @@ using UnitTestProject1.PageObjects;
 namespace UnitTestProject1
 {
     [TestClass]
-    public class LoginTests
+    public class AddAddressTests
     {
         private IWebDriver driver;
-        private LoginPage loginPage;
-
+        private AddAdressPage addAddressPage;
 
         [TestInitialize]
-        public void SetUp()
+        public void Setup()
         {
             driver = new ChromeDriver();
-            loginPage = new LoginPage(driver);
+            var loginPage = new LoginPage(driver);
             driver.Manage().Window.Maximize();
             driver.Navigate().GoToUrl("http://a.testaddressbook.com/");
             loginPage.NavigateToLoginPage();
             Thread.Sleep(1000);
-        }
-
-        [TestMethod]
-        public void Login_CorrectEmail_CorrectPassword()
-        {
             loginPage.LoginApplication("test@test.test", "test");
 
-            var expectedResult = "test@test.test";
             var homePage = new HomePage(driver);
-
-            Assert.AreEqual(expectedResult, homePage.UserEmailText);
+            Thread.Sleep(1000);
+            var addressesPage = homePage.NavigateToAddressesPage();
+            Thread.Sleep(1000);
+            addAddressPage = addressesPage.NavigateToAddAddressPage();
+            Thread.Sleep(1000);
         }
 
         [TestMethod]
-        public void Login_IncorrectEmail_IncorrectPassword()
+        public void Go_To_AddAddressPage()
         {
-            loginPage.LoginApplication("weor@hdsh.asdhg", "asd");
-
-            var expectedResult = "Bad email or password.";
-            var actualResults = driver.FindElement(By.XPath("//div[starts-with(@class, 'alert')]")).Text;
-
-            Assert.AreEqual(expectedResult, actualResults);
+            addAddressPage.AddAddress();
+            var addressDetails = new AddressDetailsPage(driver);
+            var message = "Address was successfully created.";
+            Assert.AreEqual(message, addressDetails.LblSuccess.Text);
         }
+
 
         [TestCleanup]
         public void CleanUp()
